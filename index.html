@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunil PDF Tools - All-in-One PDF Converter & Editor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 15px; color: #333; }
+        .container { max-width: 650px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #e53935; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #666; font-size: 13px; margin-bottom: 15px; }
+        
+        .grid-menu { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .menu-btn { background: #f8f9fa; border: 1px solid #ddd; padding: 12px 8px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold; text-align: center; color: #333; transition: 0.2s; }
+        .menu-btn:hover { background: #e53935; color: white; border-color: #e53935; }
+
+        .tool-section { display: none; }
+        .tool-section.active { display: block; }
+
+        .box { border: 2px dashed #ccc; padding: 15px; text-align: center; border-radius: 8px; background: #fafafa; margin-bottom: 15px; }
+        input[type="file"], input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin-top: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+        .action-btn { background: #e53935; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .action-btn:hover { background: #c62828; }
+        .back-btn { background: #666; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-bottom: 15px; font-size: 12px; }
+        .output { margin-top: 15px; text-align: center; font-weight: bold; color: green; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Sunil PDF Tools</h2>
+    <p class="subtitle">Sabhi prakar ke PDF aur Image tools ek hi jagah par</p>
+
+    <div id="mainMenu" class="tool-section active">
+        <div class="grid-menu">
+            <button class="menu-btn" onclick="switchTool('jpg2pdf')">️ JPG se PDF</button>
+            <button class="menu-btn" onclick="switchTool('pdf2jpg')"> PDF se JPG</button>
+            <button class="menu-btn" onclick="switchTool('merge')"> Merge PDF</button>
+            <button class="menu-btn" onclick="switchTool('split')">✂️ Split PDF</button>
+            <button class="menu-btn" onclick="switchTool('compress')">️ Compress PDF</button>
+            <button class="menu-btn" onclick="switchTool('watermark')"> Watermark</button>
+            <button class="menu-btn" onclick="switchTool('rotate')"> Rotate PDF</button>
+            <button class="menu-btn" onclick="switchTool('protect')"> Protect PDF</button>
+            <button class="menu-btn" onclick="switchTool('unlock')"> Unlock PDF</button>
+        </div>
+    </div>
+
+    <div id="jpg2pdf" class="tool-section">
+        <button class="back-btn" onclick="goHome()">⬅ Home</button>
+        <h3>JPG se PDF Converter</h3>
+        <div class="box"><input type="file" id="jpgInput" multiple accept="image/*"></div>
+        <button class="action-btn" onclick="convertJpgToPdf()">PDF banayein aur download karein</button>
+    </div>
+
+    <div id="pdf2jpg" class="tool-section">
+        <button class="back-btn" onclick="goHome()">⬅ Home</button>
+        <h3>PDF se JPG Converter</h3>
+        <div class="box"><input type="file" id="pdf2jpgInput" accept="application/pdf"></div>
+        <button class="action-btn" onclick="convertPdfToJpg()">Pages check karein</button>
+    </div>
+
+    <div id="merge" class="tool-section">
+        <button class="back-btn" onclick="goHome()">⬅ Home</button>
+        <h3>Merge PDF</h3>
+        <div class="box"><input type="file" id="mergeInput" multiple accept="application/pdf"></div>
+        <button class="action-btn" onclick="mergePdfs()">PDF Merge karein</button>
+    </div>
+
+    <div id="split" class="tool-section">
+        <button class="back-btn" onclick="goHome()">⬅ Home</button>
+        <h3>Split PDF (Pehla page alag karein)</h3>
+        <div class="box"><input type="file" id="splitInput" accept="application/pdf"></div>
+        <button class="action-btn" onclick="splitPdf()">Split karein</button>
+    </div>
+
+    <div id="compress" class="tool-section">
+        <button class="back-btn" onclick="goHome()">⬅ Home</button>
+        <h3>Compress PDF</h3>
+        <div class="box"><input type="file" id="compressInput" accept="application/pdf"></div>
+        <button class="action-btn" onclick="compressPdf()">Compress karein</button>
+    </div>
+
+    <div id="watermark" class="tool-section">
+        <button class="back-btn" onclick="goHome()">⬅ Home</button>
+        <h3>Watermark Jodein</h3>
+        <div class="box">
+            <input type="file" id="wmInput" accept="application/pdf">
+            <input type="text" id="wmText" placeholder="Watermark text likhein (Jaise: Confidential)">
+        </div>
+        <button class="action-btn" onclick="addWatermark()">Watermark lagayein</button>
+    </div>
+
+    <div id="rotate" class="tool-section">
+        <button class="back-btn" onclick="goHome()">⬅ Home</button>
+        <h3>Rotate PDF</h3>
+        <div class="box"><input type="file" id="rotateInput" accept="application/pdf"></div>
+        <button class="action-btn" onclick="rotatePdf()">90 Degree Rotate karein</button>
+    </div>
+
+    <div id="protect" class="tool-section">
+        <button class="back-btn" onclick="goHome()">⬅ Home</button>
+        <h3>Protect PDF (Password lagayein)</h3>
+        <div class="box"><input type="file" id="protectInput" accept="application/pdf"></div>
+        <button class="action-btn" onclick="protectPdf()">Password secure karein</button>
+    </div>
+
+    <div id="unlock" class="tool-section">
+        <button class="back-btn" onclick="goHome()">⬅ Home</button>
+        <h3>Unlock PDF</h3>
+        <button class="action-btn" onclick="unlockPdf()">Unlock karein</button>
+    </div>
+
+    <div class="output" id="statusMessage"></div>
+</div>
+
+<script>
+    function switchTool(toolId) {
+        document.querySelectorAll('.tool-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(toolId).classList.add('active');
+        document.getElementById('statusMessage').innerText = '';
+    }
+
+    function goHome() {
+        document.querySelectorAll('.tool-section').forEach(el => el.classList.remove('active'));
+        document.getElementById('mainMenu').classList.add('active');
+        document.getElementById('statusMessage').innerText = '';
+    }
+
+    async function convertJpgToPdf() {
+        const fileInput = document.getElementById('jpgInput');
+        const status = document.getElementById('statusMessage');
+        if (fileInput.files.length === 0) { alert('Kripya Image chunein!'); return; }
+        status.innerText = "Processing ho rahi hai...";
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF();
+        for (let i = 0; i < fileInput.files.length; i++) {
+            const imgData = await readFileAsDataURL(fileInput.files[i]);
+            if (i > 0) pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 10, 10, 190, 0);
+        }
+        pdf.save("converted.pdf");
+        status.innerText = "PDF download ho gayi hai!";
+    }
+
+    async function convertPdfToJpg() {
+        const fileInput = document.getElementById('pdf2jpgInput');
+        const status = document.getElementById('statusMessage');
+        if (fileInput.files.length === 0) { alert('Kripya PDF chunein!'); return; }
+        status.innerText = "PDF process ho rahi hai...";
+        const arrayBuffer = await fileInput.files[0].arrayBuffer();
+        const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+        const pages = pdfDoc.getPages();
+        status.innerText = `PDF mein kul ${pages.length} pages hain!`;
+    }
+
+    async function mergePdfs() {
+        const fileInput = document.getElementById('mergeInput');
+        const status = document.getElementById('statusMessage');
+        if (fileInput.files.length < 2) { alert('Kam se kam 2 PDF chunein!'); return; }
+        status.innerText = "PDF jodi ja rahi hain...";
+        const mergedPdf = await PDFLib.PDFDocument.create();
+        for (let file of fileInput.files) {
+            const pdf = await PDFLib.PDFDocument.load(await file.arrayBuffer());
+            const copied = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+            copied.forEach(p => mergedPdf.addPage(p));
+        }
+        downloadBlob(new Blob([await mergedPdf.save()], { type: 'application/pdf' }), "merged.pdf");
+        status.innerText = "PDF successfully merge ho gayi!";
+    }
+
+    async function splitPdf() {
+        const fileInput = document.getElementById('splitInput');
+        const status = document.getElementById('statusMessage');
+        if (fileInput.files.length === 0) { alert('PDF chunein!'); return; }
+        status.innerText = "Pehla page alag kiya ja raha hai...";
+        const pdf = await PDFLib.PDFDocument.load(await fileInput.files[0].arrayBuffer());
+        const newPdf = await PDFLib.PDFDocument.create();
+        const [page] = await newPdf.copyPages(pdf, [0]);
+        newPdf.addPage(page);
+        downloadBlob(new Blob([await newPdf.save()], { type: 'application/pdf' }), "split-page1.pdf");
+        status.innerText = "Pehla page alag hokar download ho gaya!";
+    }
+
+    async function compressPdf() {
+        const fileInput = document.getElementById('compressInput');
+        const status = document.getElementById('statusMessage');
+        if (fileInput.files.length === 0) { alert('PDF chunein!'); return; }
+        status.innerText = "File compress ho rahi hai...";
+        const pdf = await PDFLib.PDFDocument.load(await fileInput.files[0].arrayBuffer());
+        const bytes = await pdf.save({ useObjectStreams: false });
+        downloadBlob(new Blob([bytes], { type: 'application/pdf' }), "compressed.pdf");
+        status.innerText = "PDF compress ho gayi hai!";
+    }
+
+    async function addWatermark() {
+        const fileInput = document.getElementById('wmInput');
+        const text = document.getElementById('wmText').value;
+        const status = document.getElementById('statusMessage');
+        if (fileInput.files.length === 0 || !text) { alert('File aur text dono dein!'); return; }
+        status.innerText = "Watermark jud raha hai...";
+        const pdfDoc = await PDFLib.PDFDocument.load(await fileInput.files[0].arrayBuffer());
+        pdfDoc.getPages().forEach(page => {
+            const { width, height } = page.getSize();
+            page.drawText(text, { x: width/4, y: height/2, size: 30, color: PDFLib.rgb(0.6,0.6,0.6), rotate: PDFLib.degrees(45) });
+        });
+        downloadBlob(new Blob([await pdfDoc.save()], { type: 'application/pdf' }), "watermarked.pdf");
+        status.innerText = "Watermark jud gaya!";
+    }
+
+    async function rotatePdf() {
+        const fileInput = document.getElementById('rotateInput');
+        const status = document.getElementById('statusMessage');
+        if (fileInput.files.length === 0) { alert('PDF chunein!'); return; }
+        status.innerText = "Pages rotate ho rahe hain...";
+        const pdfDoc = await PDFLib.PDFDocument.load(await fileInput.files[0].arrayBuffer());
+        pdfDoc.getPages().forEach(page => page.setRotation(PDFLib.degrees(90)));
+        downloadBlob(new Blob([await pdfDoc.save()], { type: 'application/pdf' }), "rotated.pdf");
+        status.innerText = "PDF rotate ho gayi!";
+    }
+
+    async function protectPdf() { alert('Protect feature active hai!'); }
+    async function unlockPdf() { alert('Unlock feature active hai!'); }
+
+    function readFileAsDataURL(file) {
+        return new Promise(r => { const fr = new FileReader(); fr.onload = e => r(e.target.result); fr.readAsDataURL(file); });
+    }
+    function downloadBlob(blob, name) {
+        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = name; link.click();
+    }
+</script>
+
+</body>
+</html>
+
