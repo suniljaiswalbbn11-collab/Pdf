@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JPG से PDF कन्वर्टर - मुफ्त ऑनलाइन टूल</title>
+    <!-- jsPDF लाइब्रेरी जो इमेज को PDF में बदलेगी -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; text-align: center; padding: 20px; margin: 0; }
+        .container { background: white; max-width: 450px; margin: 40px auto; padding: 25px; border-radius: 12px; box-shadow: 0px 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #333; margin-bottom: 10px; }
+        p { color: #666; font-size: 14px; margin-bottom: 20px; }
+        input[type="file"] { display: none; }
+        .upload-btn { background: #ff4757; color: white; padding: 12px 25px; font-size: 16px; border-radius: 6px; cursor: pointer; display: inline-block; font-weight: bold; margin-bottom: 15px; }
+        .upload-btn:hover { background: #ff6b81; }
+        #convertBtn { background: #2ed573; color: white; border: none; padding: 12px 25px; font-size: 16px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; display: none; }
+        #convertBtn:hover { background: #26af5f; }
+        #fileList { margin: 15px 0; font-size: 14px; color: #333; text-align: left; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>JPG से PDF कन्वर्टर</h2>
+        <p>अपनी इमेज चुनें और तुरंत PDF डाउनलोड करें</p>
+
+        <!-- फाइल चुनने का बटन -->
+        <label for="imageInput" class="upload-btn"> इमेज चुनें (Select Images)</label>
+        <input type="file" id="imageInput" accept="image/*" multiple>
+
+        <div id="fileList"></div>
+
+        <!-- पीडीएफ बनाने का बटन -->
+        <button id="convertBtn" onclick="convertToPdf()">PDF डाउनलोड करें</button>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        const imageInput = document.getElementById('imageInput');
+        const convertBtn = document.getElementById('convertBtn');
+        const fileList = document.getElementById('fileList');
+
+        imageInput.addEventListener('change', function(event) {
+            selectedFiles = event.target.files;
+            if (selectedFiles.length > 0) {
+                fileList.innerHTML = `<b>चुनी गई फाइलें:</b> ${selectedFiles.length} इमेज`;
+                convertBtn.style.display = "block";
+            } else {
+                fileList.innerHTML = "";
+                convertBtn.style.display = "none";
+            }
+        });
+
+        async function convertToPdf() {
+            if (selectedFiles.length === 0) return;
+
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+
+            convertBtn.innerText = "प्रोसेस हो रहा है...";
+
+            for (let i = 0; i < selectedFiles.length; i++) {
+                const file = selectedFiles[i];
+                const base64Image = await toBase64(file);
+
+                if (i > 0) {
+                    pdf.addPage();
+                }
+
+                // इमेज को पीडीएफ पेज पर फिट करना
+                const imgProps = pdf.getImageProperties(base64Image);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                pdf.addImage(base64Image, 'JPEG', 0, 10, pdfWidth, pdfHeight);
+            }
+
+            // पीडीएफ डाउनलोड कराना
+            pdf.save("converted-image.pdf");
+            convertBtn.innerText = "PDF डाउनलोड करें";
+        }
+
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    </script>
+
+</body>
+</html>
+
