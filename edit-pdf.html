@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit PDF Online - Add Text and Notes Free</title>
+    <meta name="description" content="Edit your PDF documents online for free. Add text, annotations, and notes directly inside your browser with ease.">
+    <!-- PDF-Lib Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; margin: 0; padding: 0; color: #333; }
+        header { background: #fff; padding: 15px 20px; border-bottom: 1px solid #eaeaea; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .logo { font-size: 20px; font-weight: bold; color: #e53935; text-decoration: none; }
+        .back-home { background: #f1f3f5; color: #333; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 14px; font-weight: 600; }
+        .back-home:hover { background: #e2e6ea; }
+
+        .container { max-width: 700px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; }
+        h1 { color: #222; font-size: 24px; margin-bottom: 10px; }
+        p { color: #666; font-size: 14px; margin-bottom: 25px; }
+
+        .upload-box { border: 2px dashed #cbd5e1; padding: 30px; border-radius: 10px; background: #f8fafc; margin-bottom: 20px; cursor: pointer; transition: 0.2s; }
+        .upload-box:hover { border-color: #e53935; background: #fff5f5; }
+        input[type="file"] { display: none; }
+        .file-label { font-size: 16px; font-weight: 600; color: #e53935; cursor: pointer; }
+
+        .editor-controls { display: none; margin-bottom: 20px; text-align: left; background: #f1f3f5; padding: 15px; border-radius: 8px; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #444; }
+        .input-group input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+
+        .action-btn { background: #e53935; color: white; border: none; padding: 12px 20px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .action-btn:hover { background: #c62828; }
+        
+        .status { margin-top: 20px; font-weight: bold; color: #2e7d32; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">Sunil PDF Tools</a>
+    <a href="index.html" class="back-home">⬅ होम (Home)</a>
+</header>
+
+<div class="container">
+    <h1>Edit PDF Online</h1>
+    <p>पीडीएफ फाइल में नया टेक्स्ट या नोट जोड़ें</p>
+
+    <div class="upload-box" onclick="document.getElementById('editInput').click()">
+        <span style="font-size: 40px; display: block; margin-bottom: 10px;">✏️📄</span>
+        <span class="file-label">यहाँ क्लिक करके पीडीएफ फाइल चुनें</span>
+        <input type="file" id="editInput" accept="application/pdf" onchange="initEditor()">
+    </div>
+
+    <div id="fileInfo" style="margin-bottom: 15px; font-size: 13px; color: #555; font-weight: 600;"></div>
+
+    <div class="editor-controls" id="editorControls">
+        <div class="input-group">
+            <label for="editText">जोड़ने के लिए टेक्स्ट (Text to Add)</label>
+            <input type="text" id="editText" placeholder="यहाँ टेक्स्ट लिखें...">
+        </div>
+        <div class="input-group">
+            <label for="editPage">किस पेज पर जोड़ना है? (Page Number, e.g., 1)</label>
+            <input type="number" id="editPage" value="1" min="1">
+        </div>
+    </div>
+
+    <button class="action-btn" id="saveBtn" style="display:none;" onclick="applyEdit()">एडिट सेव करें और डाउनलोड करें</button>
+    <div class="status" id="statusMessage"></div>
+</div>
+
+<script>
+    let selectedFile = null;
+
+    function initEditor() {
+        const input = document.getElementById('editInput');
+        const infoDisplay = document.getElementById('fileInfo');
+        const controls = document.getElementById('editorControls');
+        const saveBtn = document.getElementById('saveBtn');
+
+        if (input.files.length > 0) {
+            selectedFile = input.files[0];
+            infoDisplay.innerText = `चुनी गई फाइल: ${selectedFile.name}`;
+            controls.style.display = 'block';
+            saveBtn.style.display = 'block';
+        }
+    }
+
+    async function applyEdit() {
+        const textToAdd = document.getElementById('editText').value;
+        const pageNum = parseInt(document.getElementById('editPage').value) - 1;
+        const status = document.getElementById('statusMessage');
+
+        if (!selectedFile) {
+            alert('कृपया पहले पीडीएफ फाइल चुनें!');
+            return;
+        }
+
+        if (!textToAdd) {
+            alert('कृपया जोड़ने के लिए कुछ टेक्स्ट लिखें!');
+            return;
+        }
+
+        status.innerText = "पीडीएफ एडिट की जा रही है...";
+
+        try {
+            const arrayBuffer = await selectedFile.arrayBuffer();
+            const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+            
+            const pages = pdfDoc.getPages();
+            if (pageNum < 0 || pageNum >= pages.length) {
+                alert(`अमान्य पेज नंबर! इस पीडीएफ में कुल ${pages.length} पेज हैं।`);
+                status.innerText = "";
+                return;
+            }
+
+            const page = pages[pageNum];
+            const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+            
+            // पेज के ऊपरी हिस्से में टेक्स्ट जोड़ना
+            const { width, height } = page.getSize();
+            page.drawText(textToAdd, {
+                x: 50,
+                y: height - 100,
+                size: 16,
+                font: font,
+                color: PDFLib.rgb(0, 0, 0),
+            });
+
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `edited-document.pdf`;
+            link.click();
+
+            status.innerText = "सफलतापूर्वक! एडिटेड पीडीएफ डाउनलोड हो गई है।";
+        } catch (error) {
+            console.error(error);
+            status.innerText = "एरर: पीडीएफ एडिट करने में समस्या आई।";
+        }
+    }
+</script>
+
+</body>
+</html>
