@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remove Pages from PDF Online - Delete PDF Pages Free</title>
+    <meta name="description" content="Delete specific pages from your PDF documents online for free. Fast and secure PDF page remover working directly in your browser.">
+    <!-- PDF-Lib Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; margin: 0; padding: 0; color: #333; }
+        header { background: #fff; padding: 15px 20px; border-bottom: 1px solid #eaeaea; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .logo { font-size: 20px; font-weight: bold; color: #e53935; text-decoration: none; }
+        .back-home { background: #f1f3f5; color: #333; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 14px; font-weight: 600; }
+        .back-home:hover { background: #e2e6ea; }
+
+        .container { max-width: 600px; margin: 50px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; }
+        h1 { color: #222; font-size: 24px; margin-bottom: 10px; }
+        p { color: #666; font-size: 14px; margin-bottom: 25px; }
+
+        .upload-box { border: 2px dashed #cbd5e1; padding: 30px; border-radius: 10px; background: #f8fafc; margin-bottom: 20px; cursor: pointer; transition: 0.2s; }
+        .upload-box:hover { border-color: #e53935; background: #fff5f5; }
+        input[type="file"] { display: none; }
+        .file-label { font-size: 16px; font-weight: 600; color: #e53935; cursor: pointer; }
+
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #444; }
+        .input-group input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+
+        .action-btn { background: #e53935; color: white; border: none; padding: 12px 20px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .action-btn:hover { background: #c62828; }
+        
+        .status { margin-top: 20px; font-weight: bold; color: #2e7d32; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">Sunil PDF Tools</a>
+    <a href="index.html" class="back-home">⬅ होम (Home)</a>
+</header>
+
+<div class="container">
+    <h1>Remove Pages from PDF</h1>
+    <p>पीडीएफ फाइल से अवांछित पेज हटाएं (Delete Pages)</p>
+
+    <div class="upload-box" onclick="document.getElementById('removeInput').click()">
+        <span style="font-size: 40px; display: block; margin-bottom: 10px;">❌📄</span>
+        <span class="file-label">यहाँ क्लिक करके पीडीएफ फाइल चुनें</span>
+        <input type="file" id="removeInput" accept="application/pdf" onchange="showFileName()">
+    </div>
+
+    <div id="fileInfo" style="margin-bottom: 15px; font-size: 13px; color: #555; font-weight: 600;"></div>
+
+    <div class="input-group">
+        <label for="pageToRemove">कौन सा पेज हटाना है? (जैसे: 2)</label>
+        <input type="number" id="pageToRemove" placeholder="पेज नंबर दर्ज करें">
+    </div>
+
+    <button class="action-btn" onclick="removePage()">पेज हटाएं और PDF डाउनलोड करें</button>
+    <div class="status" id="statusMessage"></div>
+</div>
+
+<script>
+    function showFileName() {
+        const input = document.getElementById('removeInput');
+        const infoDisplay = document.getElementById('fileInfo');
+        if (input.files.length > 0) {
+            infoDisplay.innerText = `चुनी गई फाइल: ${input.files[0].name}`;
+        }
+    }
+
+    async function removePage() {
+        const fileInput = document.getElementById('removeInput');
+        const pageNumInput = document.getElementById('pageToRemove').value;
+        const status = document.getElementById('statusMessage');
+        
+        if (fileInput.files.length === 0) {
+            alert('कृपया पहले एक पीडीएफ फाइल चुनें!');
+            return;
+        }
+
+        if (!pageNumInput) {
+            alert('कृपया हटाने के लिए पेज नंबर दर्ज करें!');
+            return;
+        }
+
+        status.innerText = "पेज हटाया जा रहा है...";
+
+        try {
+            const arrayBuffer = await fileInput.files[0].arrayBuffer();
+            const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+            
+            const targetPageIndex = parseInt(pageNumInput) - 1;
+            const totalPages = pdfDoc.getPageCount();
+
+            if (targetPageIndex < 0 || targetPageIndex >= totalPages) {
+                alert(`अमान्य पेज नंबर! इस पीडीएफ में कुल ${totalPages} पेज हैं।`);
+                status.innerText = "";
+                return;
+            }
+
+            pdfDoc.removePage(targetPageIndex);
+
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `page-removed.pdf`;
+            link.click();
+
+            status.innerText = "सफलतापूर्वक! चुनिंदा पेज हटाकर नई फाइल डाउनलोड हो गई है।";
+        } catch (error) {
+            console.error(error);
+            status.innerText = "एरर: पेज हटाने में दिक्कत आई।";
+        }
+    }
+</script>
+
+</body>
+</html>
