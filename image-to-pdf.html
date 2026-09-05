@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convert Images to PDF Online - JPG to PDF Free</title>
+    <meta name="description" content="Convert multiple images (JPG, PNG) into a single PDF document online for free directly inside your browser.">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; margin: 0; padding: 0; color: #333; }
+        header { background: #fff; padding: 15px 20px; border-bottom: 1px solid #eaeaea; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .logo { font-size: 20px; font-weight: bold; color: #e53935; text-decoration: none; }
+        .back-home { background: #f1f3f5; color: #333; padding: 8px 15px; border-radius: 5px; text-decoration: none; font-size: 14px; font-weight: 600; }
+        .back-home:hover { background: #e2e6ea; }
+
+        .container { max-width: 600px; margin: 50px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; }
+        h1 { color: #222; font-size: 24px; margin-bottom: 10px; }
+        p { color: #666; font-size: 14px; margin-bottom: 25px; }
+
+        .upload-box { border: 2px dashed #cbd5e1; padding: 30px; border-radius: 10px; background: #f8fafc; margin-bottom: 20px; cursor: pointer; transition: 0.2s; }
+        .upload-box:hover { border-color: #e53935; background: #fff5f5; }
+        input[type="file"] { display: none; }
+        .file-label { font-size: 16px; font-weight: 600; color: #e53935; cursor: pointer; }
+
+        .action-btn { background: #e53935; color: white; border: none; padding: 12px 20px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .action-btn:hover { background: #c62828; }
+        
+        .status { margin-top: 20px; font-weight: bold; color: #2e7d32; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">Sunil PDF Tools</a>
+    <a href="index.html" class="back-home">⬅ होम (Home)</a>
+</header>
+
+<div class="container">
+    <h1>Images to PDF Converter</h1>
+    <p>तस्वीरों (JPG/PNG) को पीडीएफ फाइल में बदलें</p>
+
+    <div class="upload-box" onclick="document.getElementById('imagesInput').click()">
+        <span style="font-size: 40px; display: block; margin-bottom: 10px;">🖼️📚</span>
+        <span class="file-label">यहाँ क्लिक करके एक या अधिक तस्वीरें चुनें</span>
+        <input type="file" id="imagesInput" accept="image/*" multiple onchange="showFileCount()">
+    </div>
+
+    <div id="fileInfo" style="margin-bottom: 15px; font-size: 13px; color: #555; font-weight: 600;"></div>
+
+    <button class="action-btn" onclick="convertImagesToPdf()">तस्वीरें PDF में बदलें और डाउनलोड करें</button>
+    <div class="status" id="statusMessage"></div>
+</div>
+
+<script>
+    function showFileCount() {
+        const input = document.getElementById('imagesInput');
+        const infoDisplay = document.getElementById('fileInfo');
+        if (input.files.length > 0) {
+            infoDisplay.innerText = `चुनी गई कुल तस्वीरें: ${input.files.length}`;
+        }
+    }
+
+    async function convertImagesToPdf() {
+        const fileInput = document.getElementById('imagesInput');
+        const status = document.getElementById('statusMessage');
+        
+        if (fileInput.files.length === 0) {
+            alert('कृपया पहले कम से कम एक तस्वीर चुनें!');
+            return;
+        }
+
+        status.innerText = "तस्वीरें पीडीएफ में कन्वर्ट हो रही हैं...";
+
+        try {
+            const pdfDoc = await PDFLib.PDFDocument.create();
+
+            for (let i = 0; i < fileInput.files.length; i++) {
+                const file = fileInput.files[i];
+                const arrayBuffer = await file.arrayBuffer();
+                
+                let image;
+                if (file.type === 'image/png') {
+                    image = await pdfDoc.embedPng(arrayBuffer);
+                } else {
+                    image = await pdfDoc.embedJpg(arrayBuffer);
+                }
+
+                const page = pdfDoc.addPage([image.width, image.height]);
+                page.drawImage(image, {
+                    x: 0,
+                    y: 0,
+                    width: image.width,
+                    height: image.height,
+                });
+            }
+
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `images-converted.pdf`;
+            link.click();
+
+            status.innerText = "सफलतापूर्वक! सभी तस्वीरें पीडीएफ में बदलकर डाउनलोड हो गई हैं।";
+        } catch (error) {
+            console.error(error);
+            status.innerText = "एरर: तस्वीरें कन्वर्ट करने में दिक्कत आई।";
+        }
+    }
+</script>
+
+</body>
+</html>
